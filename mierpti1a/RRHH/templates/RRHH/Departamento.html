@@ -1,0 +1,157 @@
+{% extends "RRHH/base2.html" %}
+{% load static %}
+{% block content %}
+<body>
+    <div class="header">
+        <h1>Gestión de Departamentos</h1>
+        <p>Administra los detalles de los Departamentos de manera eficiente.</p>
+    </div>
+
+    <div class="container">
+        <div class="d-flex justify-content-between mb-3">
+            <h2>Lista de Departamentos</h2>
+            <button class="btn btn-custom" onclick="abrirModalAgregar()">Agregar Departamento</button>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Sucursal</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="departamentoTableBody">
+                {% for departamento in departamentos %}
+                <tr id="departamento-{{ departamento.id }}">
+                    <td>{{ departamento.nombre }}</td>
+                    <td>{{ departamento.sucursal.nombre }}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm"
+                            onclick="abrirModalEditar('{{ departamento.id }}', '{{ departamento.nombre }}', '{{ departamento.sucursal.id }}')">
+                            Editar
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarDepartamento('{{ departamento.id }}')">Eliminar</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr id="sinDepartamentos">
+                    <td colspan="3">No hay departamentos registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal para Agregar/Editar Departamento -->
+    <div class="modal fade" id="departamentoModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="departamentoModalLabel">Agregar Departamento</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="departamentoForm">
+                        {% csrf_token %}
+                        <input type="hidden" id="departamento_id">
+                        <div class="form-group">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sucursal">Sucursal</label>
+                            <select class="form-control" id="sucursal" required>
+                                {% for sucursal in sucursales %}
+                                <option value="{{ sucursal.id }}">{{ sucursal.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-custom" onclick="guardarDepartamento()">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalAgregar() {
+            document.getElementById('departamentoForm').reset();
+            document.getElementById('departamento_id').value = '';
+            document.getElementById('departamentoModalLabel').innerText = 'Agregar Departamento';
+            $('#departamentoModal').modal('show');
+        }
+
+        function abrirModalEditar(id, nombre, sucursalId) {
+            document.getElementById('departamento_id').value = id;
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('sucursal').value = sucursalId;
+            document.getElementById('departamentoModalLabel').innerText = 'Editar Departamento';
+            $('#departamentoModal').modal('show');
+        }
+
+        function guardarDepartamento() {
+            const id = document.getElementById('departamento_id').value;
+            const nombre = document.getElementById('nombre').value;
+            const sucursal = document.getElementById('sucursal').value;
+            const url = id ? `/RRHH/editar_departamento/${id}/` : '/RRHH/crear_departamento/';
+        
+            const data = {
+                nombre: nombre,
+                sucursal: sucursal,
+                csrfmiddlewaretoken: document.querySelector('input[name=csrfmiddlewaretoken]').value
+            };
+        
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': data.csrfmiddlewaretoken
+                },
+                body: new URLSearchParams(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert(data.message);
+                    location.reload(); // Recarga la página para reflejar los cambios
+                } else {
+                    alert(data.error || 'Ocurrió un error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar el departamento.');
+            });
+        }
+        
+
+        function eliminarDepartamento(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este departamento?')) {
+                fetch(`/RRHH/eliminar_departamento/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('input[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        location.reload(); // Recarga la página para ver los cambios
+                    } else {
+                        alert(data.error || 'Ocurrió un error');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+        
+    </script>
+</body>
+{% endblock %}

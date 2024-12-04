@@ -1,0 +1,152 @@
+{% extends "RRHH/base2.html" %}
+
+{% block content %}
+
+<div class="container">
+    <div class="header">
+        <h1>Gestión de Sucursales</h1>
+        <p>Administra los detalles de las Sucursales de manera eficiente.</p>
+    </div>
+    
+    <div class="container">
+        <div class="d-flex justify-content-between mb-3">
+            <h2>Lista de Sucursales</h2>
+            <button class="btn btn-custom" data-toggle="modal" data-target="#sucursalModal" onclick="openCreateModal()">Agregar Sucursal</button>
+        </div>
+    <!-- Tabla de Sucursales -->
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sucursal in sucursales %}
+            <tr>
+                <td>{{ sucursal.nombre }}</td>
+                <td>{{ sucursal.direccion }}</td>
+<td>
+    <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#sucursalModal" 
+            onclick="openEditModal({{ sucursal.id }}, '{{ sucursal.nombre }}', '{{ sucursal.direccion }}')">
+        Editar
+    </button>
+    <button class="btn btn-danger btn-sm" onclick="deleteSucursal({{ sucursal.id }})">
+        Eliminar
+    </button>
+</td>
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No hay sucursales registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal para Crear/Editar Sucursal -->
+<div class="modal fade" id="sucursalModal" tabindex="-1" role="dialog" aria-labelledby="sucursalModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sucursalModalLabel">Agregar/Editar Sucursal</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="sucursalForm">
+                    <input type="hidden" id="sucursalId" name="id">
+                    <div class="form-group">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="direccion">Dirección</label>
+                        <input type="text" class="form-control" id="direccion" name="direccion" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-custom" onclick="saveSucursal()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCreateModal() {
+        document.getElementById('sucursalForm').reset();
+        document.getElementById('sucursalId').value = '';
+        document.getElementById('sucursalModalLabel').innerText = 'Agregar Sucursal';
+    }
+
+    function openEditModal(id, nombre, direccion) {
+        document.getElementById('sucursalId').value = id;
+        document.getElementById('nombre').value = nombre;
+        document.getElementById('direccion').value = direccion;
+        document.getElementById('sucursalModalLabel').innerText = 'Editar Sucursal';
+    }
+
+    function saveSucursal() {
+        const id = document.getElementById('sucursalId').value;
+        const url = id ? `/RRHH/editar/${id}/` : '/RRHH/crear/'; // Aquí está la distinción entre creación y edición
+        const data = {
+            nombre: document.getElementById('nombre').value,
+            direccion: document.getElementById('direccion').value,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        };
+    
+        fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': data.csrfmiddlewaretoken },
+            body: new URLSearchParams(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                // Verifica si es creación o edición y muestra el mensaje correspondiente
+                if (id) {
+                    alert('Sucursal actualizada exitosamente!'); // Mensaje de edición
+                } else {
+                    alert('Sucursal creada exitosamente!'); // Mensaje de creación
+                }
+                location.reload(); // Recarga la página para ver los cambios
+            } else {
+                alert(data.error || 'Ocurrió un error');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    
+    
+
+        function deleteSucursal(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar esta sucursal?')) {
+                fetch(`/RRHH/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        location.reload(); // Recarga la página para ver los cambios
+                    } else {
+                        alert(data.error || 'Ocurrió un error');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+    
+</script>
+
+{% endblock %}
+

@@ -20,13 +20,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+
 SECRET_KEY = 'django-insecure-4o%zvzc4wjzsstx5zc0jh^+3ln6m=*#t$(8!lm+j8+o78mz)tw'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+DEBUG = False
+
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    ".ngrok-free.app"
+]
 
 
 # Application definition
@@ -50,8 +54,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Asegúrate de que esté aquí.
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -60,9 +65,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    "https://ec15-38-194-241-170.ngrok-free.app",
 ]
 
 ROOT_URLCONF = 'mierpti1a.urls'
@@ -142,7 +149,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "ecar",  # Agrega la ruta de la carpeta que contiene los estáticos
     BASE_DIR / "static",
-    BASE_DIR / "inventory/static",
     BASE_DIR / "media/pos/static",
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -162,4 +168,18 @@ LOGIN_URL = '/ecar/login/'
 
 LOGIN_REDIRECT_URL = '/shipments/orders/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+
+
+
+# Habilitar WhiteNoise para servir archivos estáticos comprimidos y cacheables
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "https://ec15-38-194-241-170.ngrok-free.app"
+]
+
+
 

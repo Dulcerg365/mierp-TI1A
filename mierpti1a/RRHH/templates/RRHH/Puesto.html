@@ -1,0 +1,153 @@
+{% extends "RRHH/base2.html" %}
+{% load static %}
+{% block content %}
+<body>
+    <div class="header">
+        <h1>Gestión de Puestos</h1>
+        <p>Administra los detalles de los Puestos de manera eficiente.</p>
+    </div>
+    <div class="container">
+        <div class="d-flex justify-content-between mb-3">
+            <h2>Lista de Puestos</h2>
+            <button class="btn btn-custom" onclick="abrirModalAgregar()">Agregar Puestos</button>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Departamento</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="puestoTableBody">
+                {% for puesto in puestos %}
+                <tr id="puesto-{{ puesto.id }}">
+                    <td>{{ puesto.nombre }}</td>
+                    <td>{{ puesto.departamento.nombre }}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm"
+                            onclick="abrirModalEditar('{{ puesto.id }}', '{{ puesto.nombre }}', '{{ puesto.departamento.id }}')">
+                            Editar
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarPuesto('{{ puesto.id }}')">Eliminar</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr id="sinPuestos">
+                    <td colspan="3">No hay puestos registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal para Agregar/Editar Puesto -->
+    <div class="modal fade" id="puestoModal" tabindex="-1" role="dialog" aria-labelledby="puestoModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="puestoModalLabel">Agregar Puesto</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="puestoForm">
+                        {% csrf_token %}
+                        <input type="hidden" id="puesto_id">
+                        <div class="form-group">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="departamento">Departamento</label>
+                            <select class="form-control" id="departamento" required>
+                                {% for departamento in departamentos %}
+                                    <option value="{{ departamento.id }}">{{ departamento.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-custom" onclick="guardarPuesto()">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalAgregar() {
+            document.getElementById('puestoForm').reset();
+            document.getElementById('puesto_id').value = '';
+            document.getElementById('puestoModalLabel').innerText = 'Agregar Puesto';
+            $('#puestoModal').modal('show');
+        }
+
+        function abrirModalEditar(id, nombre, departamentoId) {
+            document.getElementById('puesto_id').value = id;
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('departamento').value = departamentoId;
+            document.getElementById('puestoModalLabel').innerText = 'Editar Puesto';
+            $('#puestoModal').modal('show');
+        }
+
+        function guardarPuesto() {
+            const id = document.getElementById('puesto_id').value;
+            const nombre = document.getElementById('nombre').value;
+            const departamento = document.getElementById('departamento').value;
+            const url = id ? `/RRHH/editar_puesto/${id}/` : '/RRHH/crear_puesto/';
+
+            const data = {
+                nombre: nombre,
+                departamento: departamento,
+                csrfmiddlewaretoken: document.querySelector('input[name=csrfmiddlewaretoken]').value
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': data.csrfmiddlewaretoken
+                },
+                body: new URLSearchParams(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert(data.message);
+                    location.reload(); // Recarga la página para reflejar los cambios
+                } else {
+                    alert(data.error || 'Ocurrió un error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar el puesto.');
+            });
+        }
+
+        function eliminarPuesto(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este puesto?')) {
+                fetch(`/RRHH/eliminar_puesto/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('input[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        location.reload(); // Recarga la página para ver los cambios
+                    } else {
+                        alert(data.error || 'Ocurrió un error');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+    </script>
+</body>
+{% endblock %}

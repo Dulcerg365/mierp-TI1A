@@ -1,0 +1,67 @@
+{% extends "RRHH/base2.html" %}
+{% load static %}
+{% block content %}
+<div>
+    <style>
+        body {
+            background-image: url("{% static 'RRHH/fondo.jpg' %}");
+            background-size: cover; 
+            background-repeat: no-repeat; 
+            background-attachment:
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            background-color: transparent;
+        }
+        .navbar-nav .nav-link {
+            color: white;
+        }
+        .header {
+            text-align: center;
+            padding: 50px 0;
+        }
+        .header h1 {
+            font-size: 3em;
+        }
+        .header p {
+            font-size: 1.2em;
+        }
+        .header .btn {
+            background: linear-gradient(135deg, #81c784, #388e3c); /* Degradado para el botón */
+            border: none;
+            color: white;
+        }
+        .header .btn:hover {
+            background: linear-gradient(135deg, #66bb6a, #2e7d32); /* Degradado para hover */
+        }
+        .illustration {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .illustration img {
+            width: 100%;
+            max-width: 200px;
+        }
+        .hrm-text {
+            font-size: 5em;
+            font-weight: bold;
+            color: #388e3c; /* Color verde oscuro */
+        }
+    </style>
+</head>
+<body>
+
+            
+    <div class="header">
+        <h1>La pasión por el trabajo es lo que nos hace grandes</h1>
+        <p>Conoce todo lo que Recursos Humanos tiene preparado para acompañarte en tu camino.</p>
+    </div>
+    <div class="illustration">
+        <div class="hrm-text">HRM</div>
+        <img src="{% static 'RRHH/recursos-humanos.png' %}" alt="Illustration">
+    </div>
+</body>
+
+</div>
+{% endblock %}

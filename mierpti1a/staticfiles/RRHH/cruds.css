@@ -1,0 +1,43 @@
+body {
+    background-image: url("fondo.jpg");
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    font-family: Arial, sans-serif;
+}
+.navbar {
+    background-color: transparent;
+}
+.navbar-nav .nav-link {
+    color: white;
+}
+.container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-top: 50px;
+    color: black;
+}
+.header {
+    text-align: center;
+    padding: 50px 0;
+}
+.header h1 {
+    font-size: 3em;
+    color: #388e3c; /* Color verde oscuro */
+}
+.header p {
+    font-size: 1.2em;
+    color: #666;
+}
+.btn-custom {
+    background: linear-gradient(135deg, #81c784, #388e3c); /* Degradado para el botón */
+    border: none;
+    color: white;
+}
+.btn-custom:hover {
+    background: linear-gradient(135deg, #66bb6a, #2e7d32); /* Degradado para hover */
+}
+.table th, .table td {
+    vertical-align: middle;
+}

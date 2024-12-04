@@ -1,0 +1,254 @@
+{% extends "RRHH/base2.html" %}
+{% load static %}
+{% block content %}
+<body>
+    <div class="header">
+        <h1>Gestión de Nóminas</h1>
+        <p>Administra los detalles de las nóminas de manera eficiente.</p>
+    </div>
+    <div class="container">
+        <div class="d-flex justify-content-between mb-3">
+            <h2>Lista de Nóminas</h2>
+            <button class="btn btn-custom" onclick="abrirModal()">Agregar Nómina</button>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Puesto</th>
+                    <th>Tipo de Nómina</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="puestoTableBody">
+                {% for nomina in nominas %}
+                <tr id="puesto-{{ nomina.id }}">
+                    <td>{{ nomina.nombre }}</td>
+                    <td>{{ nomina.puesto }}</td>
+                    <td>{{ nomina.tiponomina }}</td>
+                    <td>{{ nomina.salario_final }}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="imprimirNomina('{{ nomina.codigo }}')">Imprimir</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr id="sinNominas">
+                    <td colspan="5">No hay nóminas registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal para Agregar Nómina -->
+    <div class="modal fade" id="modalNomina" tabindex="-1" role="dialog" aria-labelledby="nominaModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nominaModalLabel">Agregar Nómina</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="cerrarModal()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="nominaForm" method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="codigo">Codigo</label>
+                            <input type="text" class="form-control" id="codigo" name="codigo">
+                        </div>
+                        <div class="form-group">
+                            <label for="nombre">Nombre del Empleado</label>
+                            <select class="form-control" id="nombre" name="nombre" required>
+                                {% for empleado in empleados %}
+                                    <option value="{{ empleado.id }}">{{ empleado.nombre }} {{ empleado.apellidos }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="departamento">Departamento</label>
+                            <select class="form-control" id="departamento" name="departamento" required>
+                                {% for departamento in departamentos %}
+                                    <option value="{{ departamento.id }}">{{ departamento.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="puesto">Puesto</label>
+                            <select class="form-control" id="puesto" name="puesto" required>
+                                {% for puesto in puestos %}
+                                    <option value="{{ puesto.id }}">{{ puesto.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tiponomina">Tipo de Nómina</label>
+                            <select class="form-control" id="tiponomina" name="tiponomina" required>
+                                <option value="S">Semanal</option>
+                                <option value="Q">Quincenal</option>
+                                <option value="M">Mensual</option>
+                                <option value="A">Anual</option>
+                                <option value="AG">Aguinaldo</option>
+                                <option value="O">Ordinario</option>
+                                <option value="F">Finiquito</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="salario_diario">Salario Diario</label>
+                            <input type="number" step="0.01" class="form-control" id="salario_diario" name="salario_diario" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dias_trabajados">Días Trabajados</label>
+                            <input type="number" class="form-control" id="dias_trabajados" name="dias_trabajados" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="monto_DA">Monto Descuento Ahorro</label>
+                            <input type="number" step="0.01" class="form-control" id="monto_DA" name="monto_DA">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="monto_DP">Monto Descuento Préstamo</label>
+                            <input type="number" step="0.01" class="form-control" id="monto_DP" name="monto_DP">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="total_percepciones">Total Percepciones</label>
+                            <input type="number" class="form-control" id="total_percepciones" name="total_percepciones" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="total_deducciones">Total Deducciones</label>
+                            <input type="number" class="form-control" id="total_deducciones" name="total_deducciones" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="salario_final">Salario Final</label>
+                            <input type="number" class="form-control" id="salario_final" name="salario_final" readonly>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModal()">Cerrar</button>
+                    <button type="button" class="btn btn-custom" onclick="guardarNomina()">Guardar Nómina</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        console.log("scriptcargado");
+        function calcularTotales() {
+            const salarioDiario = parseFloat(document.getElementById('salario_diario').value) || 0;
+            const diasTrabajados = parseFloat(document.getElementById('dias_trabajados').value) || 0;
+            const montoDA = parseFloat(document.getElementById('monto_DA').value) || 0;
+            const montoDP = parseFloat(document.getElementById('monto_DP').value) || 0;
+
+            const percepciones = salarioDiario * diasTrabajados;
+            const deducciones = montoDA + montoDP;
+            const salarioFinal = percepciones - deducciones;
+
+            document.getElementById('total_percepciones').value = percepciones.toFixed(2);
+            document.getElementById('total_deducciones').value = deducciones.toFixed(2);
+            document.getElementById('salario_final').value = salarioFinal.toFixed(2);
+        }
+
+        function abrirModal() {
+            $('#modalNomina').modal('show');
+          }
+        
+          function cerrarModal() {
+            const modal = document.getElementById('modalNomina');
+        
+            modal.style.display = 'none';
+          }
+
+        document.getElementById('salario_diario').addEventListener('input', calcularTotales);
+        document.getElementById('dias_trabajados').addEventListener('input', calcularTotales);
+        document.getElementById('monto_DA').addEventListener('input', calcularTotales);
+        document.getElementById('monto_DP').addEventListener('input', calcularTotales);
+
+        function imprimirNomina(codigo) {
+            alert(`Imprimiendo nómina para el ID: ${codigo}`);
+            
+            // Redirigir al servidor para generar el PDF
+            const url = `/RRHH/imprimir_nomina/${codigo}/`;
+        
+            // Abrir el PDF en una nueva ventana (se puede configurar para descarga o impresión directa)
+            window.open(url, '_blank');
+        }
+        
+
+        function guardarNomina() {
+            event.preventDefault(); // Previene la acción predeterminada de envío de formulario
+        
+            const form = document.getElementById('nominaForm');
+            const codigo = document.getElementById('codigo').value;
+            const nombre = document.getElementById('nombre').value;
+            const departamento = document.getElementById('departamento').value;
+            const puesto = document.getElementById('puesto').value;
+            const tiponomina = document.getElementById('tiponomina').value;
+            const salario_diario = document.getElementById('salario_diario').value;
+            const dias_trabajados = document.getElementById('dias_trabajados').value;
+            const monto_DA = document.getElementById('monto_DA').value;
+            const monto_DP = document.getElementById('monto_DP').value;
+            const total_percepciones = document.getElementById('total_percepciones').value;
+            const total_deducciones = document.getElementById('total_deducciones').value;
+            const salario_final = document.getElementById('salario_final').value;
+            const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+        
+            const url = '/RRHH/crear_nomina/';  // Cambia esta URL por la correspondiente para crear nómina
+        
+            const data = {
+                codigo:codigo,
+                nombre: nombre,
+                departamento: departamento,
+                puesto: puesto,
+                tiponomina: tiponomina,
+                salario_diario: salario_diario,
+                dias_trabajados: dias_trabajados,
+                monto_DA: monto_DA,
+                monto_DP: monto_DP,
+                total_percepciones: total_percepciones,
+                total_deducciones: total_deducciones,
+                salario_final: salario_final,
+                csrfmiddlewaretoken: csrfToken
+            };
+        
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: new URLSearchParams(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al guardar la nómina: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.message) {
+                    alert(data.message);  // Mensaje de éxito
+                    location.reload();  // Recarga la página para reflejar los cambios
+                } else {
+                    alert(data.error || 'Ocurrió un error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar la nómina.');
+            });
+        }
+        
+    </script>
+</body>
+{% endblock %}

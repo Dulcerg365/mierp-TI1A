@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./mierpti1a/django-rest-framework"
+    ]
+}

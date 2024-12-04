@@ -34,7 +34,7 @@ urlpatterns = [
     path('ecar/', include('ecar.urls')), 
     path('payments/' , include('payments.urls')),
     path('api-auth/', include('rest_framework.urls')),
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Configuración para servir archivos de medios durante el desarrollo
 if settings.DEBUG:

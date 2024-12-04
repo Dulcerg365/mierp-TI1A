@@ -1,0 +1,24 @@
+{% extends "RRHH/base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'RRHH/login.css' %}">
+<div class="container-fluid">
+    <div class="row main-container">
+        <div class="col-md-3 main-content text-center">
+            <div class="login_form">
+                <h2>Login</h2>
+                <form id="loginForm" class="form-group">
+                    {% csrf_token %}
+                    <input type="text" name="folio" id="folio" class="form__input" placeholder="Folio Empleado">
+                    <input type="password" name="password" id="password" class="form__input" placeholder="Contraseña">
+
+                    <div class="btn-container">
+                        <input type="button" value="Ingresar" class="btn" id="ingresar-btn">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'RRHH/js/login.js' %}"></script>
+{% endblock %}
